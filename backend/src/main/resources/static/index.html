@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlgoViz</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .glass { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        h1 { text-align: center; color: white; font-size: 3em; margin-bottom: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .auth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
+        button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+        .message { padding: 10px; border-radius: 5px; margin-top: 10px; display: none; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+        .hidden { display: none; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+        .stat-card { background: #f8f9ff; padding: 20px; border-radius: 10px; text-align: center; }
+        .stat-number { font-size: 2em; font-weight: bold; color: #667eea; }
+        .algo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 15px 0; }
+        .algo-tag { background: #e8e9ff; padding: 8px 15px; border-radius: 20px; text-align: center; color: #667eea; font-weight: 500; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; }
+        .flex { display: flex; gap: 10px; }
+        .user-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 AlgoViz</h1>
+
+        <!-- Auth Section -->
+        <div id="authSection" class="glass auth-grid">
+            <!-- Login -->
+            <div>
+                <h2>🔐 Login</h2>
+                <input type="email" id="loginEmail" placeholder="Email">
+                <input type="password" id="loginPassword" placeholder="Password">
+                <button onclick="login()">Login</button>
+                <div id="loginMessage" class="message"></div>
+            </div>
+            <!-- Register -->
+            <div>
+                <h2>📝 Register</h2>
+                <input type="email" id="registerEmail" placeholder="Email">
+                <input type="password" id="registerPassword" placeholder="Password">
+                <button onclick="register()">Register</button>
+                <div id="registerMessage" class="message"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="hidden">
+            <div class="glass">
+                <div class="user-header">
+                    <div>
+                        <h2 id="welcomeMessage">Welcome!</h2>
+                        <p id="userEmail"></p>
+                    </div>
+                    <button onclick="logout()" style="width: auto; padding: 10px 20px;">Logout</button>
+                </div>
+
+                <button onclick="showCreateModal()" style="background: linear-gradient(135deg, #00b09b, #96c93d); margin: 10px 0;">
+                    ➕ Create New Session
+                </button>
+
+                <div class="stats">
+                    <div class="stat-card"><span class="stat-number" id="userCount">0</span><br>Users</div>
+                    <div class="stat-card"><span class="stat-number" id="algorithmCount">8</span><br>Algorithms</div>
+                    <div class="stat-card"><span class="stat-number" id="sessionCount">0</span><br>Sessions</div>
+                </div>
+
+                <h3>📊 Available Algorithms</h3>
+                <div class="algo-grid">
+                    <div class="algo-tag">Bubble Sort</div>
+                    <div class="algo-tag">Quick Sort</div>
+                    <div class="algo-tag">Merge Sort</div>
+                    <div class="algo-tag">Binary Search</div>
+                    <div class="algo-tag">Linear Search</div>
+                    <div class="algo-tag">Dijkstra</div>
+                    <div class="algo-tag">BFS</div>
+                    <div class="algo-tag">DFS</div>
+                </div>
+
+                <h3>🎥 Recent Sessions</h3>
+                <div id="sessionsList">No sessions yet</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <h2>Create Session</h2>
+            <input type="text" id="sessionName" placeholder="Session Name">
+            <select id="algorithmSelect">
+                <option value="1">Bubble Sort</option>
+                <option value="2">Quick Sort</option>
+                <option value="3">Merge Sort</option>
+                <option value="4">Binary Search</option>
+                <option value="5">Linear Search</option>
+                <option value="6">Dijkstra</option>
+                <option value="7">BFS</option>
+                <option value="8">DFS</option>
+            </select>
+            <select id="sessionStatus">
+                <option value="ACTIVE">Active</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="PAUSED">Paused</option>
+            </select>
+            <input type="number" id="totalSteps" value="10">
+            <div class="flex">
+                <button onclick="createSession()">Create</button>
+                <button onclick="hideCreateModal()" style="background: #dc3545;">Cancel</button>
+            </div>
+            <div id="createMessage" class="message"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('token');
+        
+        if (authToken) {
+            showDashboard();
+            fetchData();
+        }
+
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const msg = document.getElementById('registerMessage');
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.className = 'message success';
+                    msg.textContent = '✓ Registration successful!';
+                } else {
+                    msg.className = 'message error';
+                    msg.textContent = '✗ ' + (data || 'Failed');
+                }
+            } catch (error) {
+                msg.className = 'message error';
+                msg.textContent = '✗ Error';
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const msg = document.getElementById('loginMessage');
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    authToken = data.token;
+                    localStorage.setItem('token', authToken);
+                    msg.className = 'message success';
+                    msg.textContent = '✓ Login successful!';
+                    setTimeout(() => {
+                        showDashboard();
+                        fetchData();
+                    }, 1000);
+                } else {
+                    msg.className = 'message error';
+                    msg.textContent = '✗ ' + (data || 'Failed');
+                }
+            } catch (error) {
+                msg.className = 'message error';
+                msg.textContent = '✗ Error';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            authToken = null;
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('authSection').classList.remove('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('authSection').classList.add('hidden');
+            try {
+                const payload = JSON.parse(atob(authToken.split('.')[1]));
+                document.getElementById('userEmail').textContent = payload.sub;
+                document.getElementById('welcomeMessage').textContent = `Welcome, ${payload.sub.split('@')[0]}!`;
+            } catch (e) {}
+        }
+
+        function showCreateModal() {
+            document.getElementById('createModal').style.display = 'flex';
+        }
+
+        function hideCreateModal() {
+            document.getElementById('createModal').style.display = 'none';
+            document.getElementById('createMessage').style.display = 'none';
+        }
+
+        async function createSession() {
+            const name = document.getElementById('sessionName').value;
+            const algoId = document.getElementById('algorithmSelect').value;
+            const status = document.getElementById('sessionStatus').value;
+            const steps = document.getElementById('totalSteps').value;
+            const msg = document.getElementById('createMessage');
+
+            if (!name || !algoId) {
+                msg.className = 'message error';
+                msg.textContent = '✗ Fill all fields';
+                msg.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/sessions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        sessionName: name,
+                        algorithmId: parseInt(algoId),
+                        status: status,
+                        isPublic: true,
+                        totalSteps: parseInt(steps),
+                        stepsCompleted: 0
+                    })
+                });
+
+                if (res.ok) {
+                    msg.className = 'message success';
+                    msg.textContent = '✓ Session created!';
+                    msg.style.display = 'block';
+                    setTimeout(() => {
+                        hideCreateModal();
+                        fetchData();
+                    }, 1500);
+                } else {
+                    const text = await res.text();
+                    msg.className = 'message error';
+                    msg.textContent = '✗ ' + text;
+                    msg.style.display = 'block';
+                }
+            } catch (error) {
+                msg.className = 'message error';
+                msg.textContent = '✗ Error';
+                msg.style.display = 'block';
+            }
+        }
+
+        async function fetchData() {
+            if (!authToken) return;
+
+            try {
+                const users = await fetch('/api/users', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                }).then(r => r.json());
+                document.getElementById('userCount').textContent = users.length;
+            } catch (e) {}
+
+            try {
+                const sessions = await fetch('/api/sessions', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                }).then(r => r.json());
+                document.getElementById('sessionCount').textContent = sessions.length;
+                
+                if (sessions.length > 0) {
+                    let html = '';
+                    sessions.slice(0, 5).forEach(s => {
+                        html += `<div style="background: #f8f9ff; padding: 10px; margin: 5px 0; border-radius: 5px;">
+                            <strong>${s.sessionName}</strong> - ${s.status} (${s.stepsCompleted || 0}/${s.totalSteps || 10})
+                        </div>`;
+                    });
+                    document.getElementById('sessionsList').innerHTML = html;
+                }
+            } catch (e) {}
+        }
+    </script>
+</body>
+</html>
